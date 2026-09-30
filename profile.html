@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your Student Restaurants profile.">
+    <title>Profile - Student Restaurants</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="profile.js" defer></script>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="container header-content">
+        <a class="brand" href="indivi_assignment.html" aria-label="Student Restaurants home">
+          <span class="brand-mark" aria-hidden="true">SR</span>
+          <span>Student Restaurants</span>
+        </a>
+
+        <nav aria-label="Main navigation">
+          <ul class="nav-list">
+            <li><a href="indivi_assignment.html#restaurants">Restaurants</a></li>
+            <li><a href="indivi_assignment.html#about">About</a></li>
+            <li><a class="current-nav-link" href="profile.html">Profile</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="account-page">
+      <div class="container profile-container">
+        <section class="profile-summary" aria-labelledby="profile-title">
+          <div class="avatar-frame">
+            <img id="avatar-image" alt="User profile picture" hidden>
+            <span id="avatar-placeholder" aria-hidden="true">SR</span>
+          </div>
+
+          <div>
+            <p class="eyebrow">Your account</p>
+            <h1 id="profile-title">Profile</h1>
+            <p id="profile-summary-text">Loading your information...</p>
+          </div>
+
+          <button class="secondary-button" id="logout-button" type="button">Log out</button>
+        </section>
+
+        <div class="profile-grid">
+          <section class="account-card" aria-labelledby="information-title">
+            <h2 id="information-title">Account information</h2>
+            <form id="profile-form">
+              <label for="profile-username">Username</label>
+              <input id="profile-username" name="username" type="text" autocomplete="username" minlength="3" required>
+
+              <label for="profile-email">Email</label>
+              <input id="profile-email" name="email" type="email" autocomplete="email" required>
+
+              <label for="profile-password">New password</label>
+              <input id="profile-password" name="password" type="password" autocomplete="new-password" minlength="8">
+              <small>Leave this empty if you do not want to change your password.</small>
+
+              <button class="form-button" type="submit">Save changes</button>
+            </form>
+            <p class="form-status" id="profile-status" role="status"></p>
+          </section>
+
+          <section class="account-card" aria-labelledby="avatar-title">
+            <h2 id="avatar-title">Profile picture</h2>
+            <form id="avatar-form">
+              <label for="avatar-file">Choose an image</label>
+              <input id="avatar-file" name="avatar" type="file" accept="image/*" required>
+              <button class="form-button" type="submit">Upload picture</button>
+            </form>
+            <p class="form-status" id="avatar-status" role="status"></p>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
