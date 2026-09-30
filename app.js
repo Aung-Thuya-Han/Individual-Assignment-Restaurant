@@ -12,14 +12,18 @@ const menuContent = document.querySelector('#menu-content');
 const dailyButton = document.querySelector('#daily-button');
 const weeklyButton = document.querySelector('#weekly-button');
 const accountLink = document.querySelector('#account-link');
+const token = localStorage.getItem('restaurantToken');
+const favoritesStorageKey = 'restaurantFavorites';
 
 let selectedRestaurant = null;
 let selectedMenuType = 'daily';
 let menuRequestNumber = 0;
 let allRestaurants = [];
 let userCoordinates = null;
+let loggedInUserId = null;
+let favoriteRestaurants = [];
 
-if (localStorage.getItem('restaurantToken')) {
+if (token) {
   accountLink.textContent = 'Profile';
   accountLink.href = 'profile.html';
 }
@@ -33,6 +37,85 @@ const fetchData = async (url) => {
   }
 
   return response.json();
+};
+
+// Read all locally saved favorites. Each user has a separate list.
+const readSavedFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(favoritesStorageKey)) || {};
+  } catch (error) {
+    console.error('Saved favorites could not be read:', error);
+    return {};
+  }
+};
+
+const saveFavorites = () => {
+  const allSavedFavorites = readSavedFavorites();
+  allSavedFavorites[loggedInUserId] = favoriteRestaurants;
+  localStorage.setItem(favoritesStorageKey, JSON.stringify(allSavedFavorites));
+};
+
+const isFavorite = (restaurantId) => {
+  return favoriteRestaurants.some((restaurant) => restaurant._id === restaurantId);
+};
+
+const updateFavoriteButton = (button) => {
+  const favorite = isFavorite(button.dataset.id);
+  button.textContent = favorite ? 'Remove from favorites' : 'Add to favorites';
+  button.classList.toggle('favorite-added', favorite);
+  button.setAttribute('aria-pressed', favorite);
+};
+
+const updateFavoriteButtons = () => {
+  document.querySelectorAll('.favorite-button').forEach((button) => {
+    updateFavoriteButton(button);
+  });
+};
+
+const toggleFavorite = (restaurant) => {
+  if (isFavorite(restaurant._id)) {
+    favoriteRestaurants = favoriteRestaurants.filter(
+      (favorite) => favorite._id !== restaurant._id,
+    );
+  } else {
+    favoriteRestaurants.push({
+      _id: restaurant._id,
+      name: restaurant.name,
+      address: restaurant.address,
+      postalCode: restaurant.postalCode,
+      city: restaurant.city,
+    });
+  }
+
+  saveFavorites();
+  updateFavoriteButtons();
+};
+
+const loadLoggedInUser = async () => {
+  if (!token) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/users/token`, {
+      headers: {Authorization: `Bearer ${token}`},
+    });
+
+    if (!response.ok) {
+      throw new Error('The saved login is no longer valid.');
+    }
+
+    const result = await response.json();
+    const user = result.data || result.user || result;
+    loggedInUserId = String(user._id || user.user_id || user.id || user.username);
+
+    const allSavedFavorites = readSavedFavorites();
+    const savedUserFavorites = allSavedFavorites[loggedInUserId];
+    favoriteRestaurants = Array.isArray(savedUserFavorites) ? savedUserFavorites : [];
+  } catch (error) {
+    console.error(error);
+    loggedInUserId = null;
+  }
 };
 
 const toRadians = (degrees) => degrees * (Math.PI / 180);
@@ -181,6 +264,7 @@ const selectRestaurant = (restaurant) => {
 
 const createRestaurantCard = (restaurant, index) => {
   const card = document.createElement('article');
+  const cardHeading = document.createElement('div');
   const name = document.createElement('h3');
   const address = document.createElement('address');
   const company = document.createElement('p');
@@ -196,12 +280,25 @@ const createRestaurantCard = (restaurant, index) => {
   button.type = 'button';
   button.textContent = 'View menu';
 
+  cardHeading.className = 'restaurant-card-heading';
+  cardHeading.append(name);
+
+  if (loggedInUserId) {
+    const favoriteButton = document.createElement('button');
+    favoriteButton.className = 'favorite-button';
+    favoriteButton.dataset.id = restaurant._id;
+    favoriteButton.type = 'button';
+    favoriteButton.addEventListener('click', () => toggleFavorite(restaurant));
+    updateFavoriteButton(favoriteButton);
+    cardHeading.append(favoriteButton);
+  }
+
   button.addEventListener('click', () => {
     selectRestaurant(restaurant);
     document.querySelector('#menu-preview').scrollIntoView();
   });
 
-  card.append(name, address, company, button);
+  card.append(cardHeading, address, company, button);
 
   if (distance !== null) {
     const distanceText = document.createElement('p');
@@ -342,4 +439,9 @@ areaSelect.addEventListener('change', () => {
   }
 });
 
-loadRestaurants();
+const startApp = async () => {
+  await loadLoggedInUser();
+  loadRestaurants();
+};
+
+startApp();

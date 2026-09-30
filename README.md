@@ -15,13 +15,16 @@
 - Registration and login using the Metropolia backend.
 - A profile page for updating username, email, password, and profile picture.
 - A saved authentication token so the user stays logged in after reloading.
+- Favorite buttons for logged-in users.
+- A separate local favorite-restaurant list for each user in the browser.
+- Favorite restaurant names and addresses on the profile page.
 
 ## What this version does not contain yet
 
-- Favorite-restaurant saving.
+- Favorites shared between different browsers or devices.
 - Maps.
 - Public deployment.
-- A Git repository or published source-code repository.
+- A published source-code repository.
 
 ## How to view the page
 

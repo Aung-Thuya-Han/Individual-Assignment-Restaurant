@@ -12,8 +12,11 @@ const passwordInput = document.querySelector('#profile-password');
 const avatarImage = document.querySelector('#avatar-image');
 const avatarPlaceholder = document.querySelector('#avatar-placeholder');
 const logoutButton = document.querySelector('#logout-button');
+const favoritesStatus = document.querySelector('#favorites-status');
+const favoriteList = document.querySelector('#favorite-list');
 
 const token = localStorage.getItem('restaurantToken');
+const favoritesStorageKey = 'restaurantFavorites';
 
 if (!token) {
   window.location.href = 'login.html';
@@ -54,10 +57,48 @@ const showUser = (user) => {
   showAvatar(user.avatar);
 };
 
+const readSavedFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(favoritesStorageKey)) || {};
+  } catch (error) {
+    console.error('Saved favorites could not be read:', error);
+    return {};
+  }
+};
+
+const showFavoriteRestaurants = (user) => {
+  const userId = String(user._id || user.user_id || user.id || user.username);
+  const savedUserFavorites = readSavedFavorites()[userId];
+  const favoriteRestaurants = Array.isArray(savedUserFavorites) ? savedUserFavorites : [];
+
+  favoriteList.replaceChildren();
+
+  if (favoriteRestaurants.length === 0) {
+    favoritesStatus.textContent = 'You have not added any favorite restaurants yet.';
+    return;
+  }
+
+  favoriteRestaurants.forEach((restaurant) => {
+    const item = document.createElement('li');
+    const name = document.createElement('h3');
+    const address = document.createElement('address');
+
+    name.textContent = restaurant.name || 'Restaurant name not available';
+    address.textContent = `${restaurant.address || 'Address not available'}, ${restaurant.postalCode || ''} ${restaurant.city || ''}`.trim();
+    item.append(name, address);
+    favoriteList.append(item);
+  });
+
+  const restaurantWord = favoriteRestaurants.length === 1 ? 'restaurant' : 'restaurants';
+  favoritesStatus.textContent = `${favoriteRestaurants.length} favorite ${restaurantWord}.`;
+};
+
 const loadProfile = async () => {
   try {
     const result = await authorizedRequest(`${apiUrl}/users/token`);
-    showUser(getUserObject(result));
+    const user = getUserObject(result);
+    showUser(user);
+    showFavoriteRestaurants(user);
   } catch (error) {
     localStorage.removeItem('restaurantToken');
     window.location.href = 'login.html';
