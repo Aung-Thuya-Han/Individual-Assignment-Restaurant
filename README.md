@@ -6,6 +6,7 @@
 - A responsive CSS layout for desktop, tablet, and mobile widths.
 - Restaurant data loaded from the Student Restaurants API.
 - Automatic area selection based on the user's location.
+- The location result is reused during the same browser session.
 - An area dropdown for manually choosing another town or city.
 - Restaurants sorted from nearest to farthest when location is available.
 - A button for selecting a restaurant.

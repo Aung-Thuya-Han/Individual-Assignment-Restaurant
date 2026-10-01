@@ -14,6 +14,7 @@ const weeklyButton = document.querySelector('#weekly-button');
 const accountLink = document.querySelector('#account-link');
 const token = localStorage.getItem('restaurantToken');
 const favoritesStorageKey = 'restaurantFavorites';
+const locationStorageKey = 'restaurantLocation';
 
 let selectedRestaurant = null;
 let selectedMenuType = 'daily';
@@ -139,6 +140,21 @@ const calculateDistance = (restaurant) => {
       Math.sin(longitudeDifference / 2) ** 2;
 
   return earthRadius * 2 * Math.atan2(Math.sqrt(calculation), Math.sqrt(1 - calculation));
+};
+
+// Session storage keeps the location while the current browser session is open.
+const readSavedLocation = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(locationStorageKey));
+  } catch (error) {
+    console.error('Saved location could not be read:', error);
+    sessionStorage.removeItem(locationStorageKey);
+    return null;
+  }
+};
+
+const saveLocation = (location) => {
+  sessionStorage.setItem(locationStorageKey, JSON.stringify(location));
 };
 
 // Create one course row for either a daily or weekly menu.
@@ -362,12 +378,7 @@ const fillAreaSelect = () => {
   areaSelect.disabled = false;
 };
 
-const useCurrentLocation = (position) => {
-  userCoordinates = {
-    latitude: position.coords.latitude,
-    longitude: position.coords.longitude,
-  };
-
+const showCurrentArea = () => {
   const closestRestaurant = [...allRestaurants]
     .filter((restaurant) => restaurant.location?.coordinates)
     .sort((first, second) => calculateDistance(first) - calculateDistance(second))[0];
@@ -383,8 +394,19 @@ const useCurrentLocation = (position) => {
   showRestaurantsInArea(closestRestaurant.city);
 };
 
+const useCurrentLocation = (position) => {
+  userCoordinates = {
+    latitude: position.coords.latitude,
+    longitude: position.coords.longitude,
+  };
+
+  saveLocation({available: true, ...userCoordinates});
+  showCurrentArea();
+};
+
 const handleLocationError = (error) => {
   console.warn('Location could not be used:', error.message);
+  saveLocation({available: false});
   currentAreaText.textContent = 'Your current location is unavailable.';
   restaurantStatus.textContent = 'Location is unavailable. Please choose an area.';
 };
@@ -401,7 +423,25 @@ const loadRestaurants = async () => {
     fillAreaSelect();
     restaurantStatus.textContent = 'Checking your location...';
 
+    const savedLocation = readSavedLocation();
+
+    if (savedLocation?.available) {
+      userCoordinates = {
+        latitude: savedLocation.latitude,
+        longitude: savedLocation.longitude,
+      };
+      showCurrentArea();
+      return;
+    }
+
+    if (savedLocation?.available === false) {
+      currentAreaText.textContent = 'Your current location is unavailable.';
+      restaurantStatus.textContent = 'Location is unavailable. Please choose an area.';
+      return;
+    }
+
     if (!navigator.geolocation) {
+      saveLocation({available: false});
       currentAreaText.textContent = 'Your current location is unavailable.';
       restaurantStatus.textContent = 'Location is not supported. Please choose an area.';
       return;
