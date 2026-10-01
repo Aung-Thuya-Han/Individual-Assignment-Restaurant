@@ -40,6 +40,8 @@ const fetchData = async (url) => {
   return response.json();
 };
 
+
+
 // Read all locally saved favorites. Each user has a separate list.
 const readSavedFavorites = () => {
   try {
@@ -121,6 +123,8 @@ const loadLoggedInUser = async () => {
 
 const toRadians = (degrees) => degrees * (Math.PI / 180);
 
+
+
 // Calculate the distance between two coordinate points in kilometres.
 const calculateDistance = (restaurant) => {
   if (!userCoordinates || !restaurant.location?.coordinates) {
@@ -142,6 +146,8 @@ const calculateDistance = (restaurant) => {
   return earthRadius * 2 * Math.atan2(Math.sqrt(calculation), Math.sqrt(1 - calculation));
 };
 
+
+
 // Session storage keeps the location while the current browser session is open.
 const readSavedLocation = () => {
   try {
@@ -156,6 +162,8 @@ const readSavedLocation = () => {
 const saveLocation = (location) => {
   sessionStorage.setItem(locationStorageKey, JSON.stringify(location));
 };
+
+
 
 // Create one course row for either a daily or weekly menu.
 const createCourseItem = (course) => {
