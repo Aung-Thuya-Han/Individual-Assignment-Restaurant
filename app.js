@@ -12,6 +12,7 @@ const menuContent = document.querySelector('#menu-content');
 const dailyButton = document.querySelector('#daily-button');
 const weeklyButton = document.querySelector('#weekly-button');
 const accountLink = document.querySelector('#account-link');
+const mapStatus = document.querySelector('#map-status');
 const token = localStorage.getItem('restaurantToken');
 const favoritesStorageKey = 'restaurantFavorites';
 const locationStorageKey = 'restaurantLocation';
@@ -23,6 +24,8 @@ let allRestaurants = [];
 let userCoordinates = null;
 let loggedInUserId = null;
 let favoriteRestaurants = [];
+let restaurantMap = null;
+let mapMarkers = [];
 
 if (token) {
   accountLink.textContent = 'Profile';
@@ -144,6 +147,97 @@ const calculateDistance = (restaurant) => {
       Math.sin(longitudeDifference / 2) ** 2;
 
   return earthRadius * 2 * Math.atan2(Math.sqrt(calculation), Math.sqrt(1 - calculation));
+};
+
+const createMap = () => {
+  if (restaurantMap) {
+    return true;
+  }
+
+  if (typeof L === 'undefined') {
+    mapStatus.textContent = 'The map could not be loaded.';
+    return false;
+  }
+
+  restaurantMap = L.map('restaurant-map').setView([64, 26], 5);
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(restaurantMap);
+
+  return true;
+};
+
+const createMarkerPopup = (restaurant) => {
+  const popup = document.createElement('div');
+  const name = document.createElement('h3');
+  const address = document.createElement('p');
+  const button = document.createElement('button');
+
+  popup.className = 'map-popup';
+  name.textContent = restaurant.name;
+  address.textContent = `${restaurant.address}, ${restaurant.postalCode} ${restaurant.city}`;
+  button.type = 'button';
+  button.textContent = 'View menu';
+
+  button.addEventListener('click', () => {
+    selectRestaurant(restaurant);
+    document.querySelector('#menu-preview').scrollIntoView();
+  });
+
+  popup.append(name, address, button);
+  return popup;
+};
+
+const updateMap = (restaurants, area = '') => {
+  if (!createMap()) {
+    return;
+  }
+
+  mapMarkers.forEach((marker) => marker.remove());
+  mapMarkers = [];
+
+  const markerCoordinates = [];
+
+  restaurants.forEach((restaurant) => {
+    if (!restaurant.location?.coordinates) {
+      return;
+    }
+
+    const [longitude, latitude] = restaurant.location.coordinates;
+    const marker = L.marker([latitude, longitude]).addTo(restaurantMap);
+    marker.bindPopup(createMarkerPopup(restaurant));
+    mapMarkers.push(marker);
+    markerCoordinates.push([latitude, longitude]);
+  });
+
+  if (userCoordinates) {
+    const userMarker = L.circleMarker(
+      [userCoordinates.latitude, userCoordinates.longitude],
+      {
+        radius: 8,
+        color: '#ffffff',
+        fillColor: '#17633c',
+        fillOpacity: 1,
+        weight: 3,
+      },
+    ).addTo(restaurantMap);
+
+    userMarker.bindPopup('Your current location');
+    mapMarkers.push(userMarker);
+  }
+
+  if (markerCoordinates.length === 1) {
+    restaurantMap.setView(markerCoordinates[0], 13);
+  } else if (markerCoordinates.length > 1) {
+    restaurantMap.fitBounds(markerCoordinates, {padding: [30, 30]});
+  }
+
+  mapStatus.textContent = area
+    ? `Showing ${markerCoordinates.length} restaurants in ${area}.`
+    : `Showing ${markerCoordinates.length} restaurants in Finland.`;
+
+  setTimeout(() => restaurantMap.invalidateSize(), 0);
 };
 
 
@@ -353,6 +447,8 @@ const showRestaurantsInArea = (area) => {
     restaurantList.append(createRestaurantCard(restaurant, index));
   });
 
+  updateMap(restaurantsInArea, area);
+
   if (restaurantsInArea.length === 0) {
     restaurantStatus.textContent = `No restaurants were found in ${area}.`;
     return;
@@ -429,6 +525,7 @@ const loadRestaurants = async () => {
     }
 
     fillAreaSelect();
+    updateMap(allRestaurants);
     restaurantStatus.textContent = 'Checking your location...';
 
     const savedLocation = readSavedLocation();

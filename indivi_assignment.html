@@ -8,7 +8,12 @@
       content="Find Finnish student restaurants and view their daily or weekly menus."
     >
     <title>Student Restaurants</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
     <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js" defer></script>
   </head>
 
@@ -25,7 +30,7 @@
           <ul class="nav-list">
             <li><a href="#restaurants">Restaurants</a></li>
             <li><a href="#menu-preview">Menu</a></li>
-            <li><a href="#about">About</a></li>
+            <li><a href="#map-section">Map</a></li>
             <li><a id="account-link" href="login.html">Log in</a></li>
           </ul>
         </nav>
@@ -107,29 +112,24 @@
         </div>
       </section>
 
-      <section class="section about-section" id="about" aria-labelledby="about-title">
-        <div class="container about-layout">
-          <div>
-            <p class="eyebrow">About this project</p>
-            <h2 id="about-title">Built for students in Finland by a student</h2>
+      <section class="section map-section" id="map-section" aria-labelledby="map-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Restaurant locations</p>
+            <h2 id="map-title">Find restaurants on the map</h2>
+            <p id="map-status" role="status">Loading restaurant locations...</p>
           </div>
-          <div class="about-text">
-            <p>
-              This application uses the Student Restaurants API to show restaurant
-              details and daily or weekly menus.
-            </p>
-            <p class="copyright-notice">
-              This website was created for educational purposes only. I do not own
-              the restaurant, menu, or company information shown here. All content
-              belongs to its respective owners.
-            </p>
-          </div>
+          <div id="restaurant-map" aria-label="Map showing student restaurant locations"></div>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
       <div class="container footer-content">
+        <p>
+          This student project is for educational purposes only. Restaurant,
+          menu, and company information belongs to its respective owners.
+        </p>
         <a href="#top">Back to top</a>
       </div>
     </footer>

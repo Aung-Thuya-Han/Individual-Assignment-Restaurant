@@ -19,11 +19,13 @@
 - Favorite buttons for logged-in users.
 - A separate local favorite-restaurant list for each user in the browser.
 - Favorite restaurant names and addresses on the profile page.
+- A Leaflet map with live restaurant markers.
+- Map markers that follow the selected area and open the restaurant menu.
+- A current-location marker when browser location is available.
 
 ## What this version does not contain yet
 
 - Favorites shared between different browsers or devices.
-- Maps.
 - Public deployment.
 - A published source-code repository.
 
