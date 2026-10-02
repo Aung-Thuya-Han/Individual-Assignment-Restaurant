@@ -25,8 +25,8 @@ const showForm = (formName) => {
 
   loginSection.hidden = !showLogin;
   registerSection.hidden = showLogin;
-  showLoginButton.classList.toggle('active-button', showLogin);
-  showRegisterButton.classList.toggle('active-button', !showLogin);
+  showLoginButton.hidden = showLogin;
+  showRegisterButton.hidden = !showLogin;
 };
 
 showLoginButton.addEventListener('click', () => showForm('login'));

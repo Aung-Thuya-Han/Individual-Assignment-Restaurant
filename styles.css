@@ -421,10 +421,17 @@ a:hover {
   gap: 60px;
 }
 
-.about-layout > p {
+.about-text p {
   margin: 0;
   color: #5d6b63;
   font-size: 18px;
+}
+
+.about-text .copyright-notice {
+  margin-top: 20px;
+  padding-left: 16px;
+  border-left: 3px solid #17633c;
+  font-size: 14px;
 }
 
 .site-footer {
@@ -473,8 +480,9 @@ a:hover {
 
 .account-switcher {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .account-tab,
